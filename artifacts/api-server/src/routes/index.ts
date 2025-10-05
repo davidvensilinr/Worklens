@@ -1,0 +1,48 @@
+import { Router, type IRouter } from "express";
+import healthRouter from "./health";
+import authRouter from "./auth";
+import organizationsRouter from "./organizations";
+import departmentsRouter from "./departments";
+import usersRouter from "./users";
+import documentsRouter from "./documents";
+import projectsRouter from "./projects";
+import tasksRouter from "./tasks";
+import attendanceRouter from "./attendance";
+import trainingRouter from "./training";
+import trainingsRouter from "./trainings";
+import promotionsRouter from "./promotions";
+import meetingsRouter from "./meetings";
+import auditRouter from "./audit";
+import mlRouter from "./ml";
+import dashboardRouter from "./dashboard";
+import chatRouter from "./chat";
+import mlExportRouter from "./ml-export";
+import verificationsRouter from "./verifications";
+import notificationsRouter from "./notifications";
+import leavesRouter from "./leaves";
+
+const router: IRouter = Router();
+
+router.use(healthRouter);
+router.use(authRouter);
+router.use(organizationsRouter);
+router.use(departmentsRouter);
+router.use(usersRouter);
+router.use(documentsRouter);
+router.use(projectsRouter);
+router.use(tasksRouter);
+router.use(attendanceRouter);
+router.use(trainingRouter);
+router.use(trainingsRouter);
+router.use(promotionsRouter);
+router.use(meetingsRouter);
+router.use(auditRouter);
+router.use(mlRouter);
+router.use(dashboardRouter);
+router.use(chatRouter);
+router.use(mlExportRouter);
+router.use(verificationsRouter);
+router.use(notificationsRouter);
+router.use(leavesRouter);
+
+export default router;

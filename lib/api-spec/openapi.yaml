@@ -1,0 +1,2593 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: WorkLens - Tamper-Proof Employee Workspace Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication
+  - name: users
+    description: User management
+  - name: organizations
+    description: Organization management
+  - name: departments
+    description: Department management
+  - name: documents
+    description: Document workspace
+  - name: tasks
+    description: Task and project tracker
+  - name: projects
+    description: Projects
+  - name: attendance
+    description: Attendance tracker
+  - name: training
+    description: Training tracker
+  - name: promotions
+    description: Promotions and recognition
+  - name: meetings
+    description: Meeting scheduler
+  - name: audit
+    description: Audit log
+  - name: ml
+    description: ML performance data API
+  - name: dashboard
+    description: HR dashboard
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /v1/auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /v1/auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register organization + super admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /v1/auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "204":
+          description: Logged out
+
+  /v1/auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  # ORGANIZATIONS
+  /v1/organizations/current:
+    get:
+      operationId: getCurrentOrganization
+      tags: [organizations]
+      summary: Get current organization
+      responses:
+        "200":
+          description: Organization
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+
+    patch:
+      operationId: updateOrganization
+      tags: [organizations]
+      summary: Update organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrganizationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+
+  # DEPARTMENTS
+  /v1/departments:
+    get:
+      operationId: listDepartments
+      tags: [departments]
+      summary: List departments
+      responses:
+        "200":
+          description: Departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Department"
+
+    post:
+      operationId: createDepartment
+      tags: [departments]
+      summary: Create department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+
+  /v1/departments/{id}:
+    get:
+      operationId: getDepartment
+      tags: [departments]
+      summary: Get department
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Department
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+
+    patch:
+      operationId: updateDepartment
+      tags: [departments]
+      summary: Update department
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+
+  # USERS
+  /v1/users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users in the organization
+      parameters:
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+        - name: role
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Users list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create/invite user (employee onboarding)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /v1/users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # DOCUMENTS
+  /v1/documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List documents
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: uploaderId
+          in: query
+          schema:
+            type: integer
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+
+    post:
+      operationId: createDocument
+      tags: [documents]
+      summary: Upload/create document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+  /v1/documents/{id}:
+    get:
+      operationId: getDocument
+      tags: [documents]
+      summary: Get document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+    patch:
+      operationId: updateDocument
+      tags: [documents]
+      summary: Update document status/metadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+  /v1/documents/{id}/submit:
+    post:
+      operationId: submitDocument
+      tags: [documents]
+      summary: Submit document for review
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+  /v1/documents/{id}/verify:
+    post:
+      operationId: verifyDocument
+      tags: [documents]
+      summary: Approve or reject document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentVerifyInput"
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+
+  # PROJECTS
+  /v1/projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List projects
+      responses:
+        "200":
+          description: Projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /v1/projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  # TASKS
+  /v1/tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List tasks
+      parameters:
+        - name: projectId
+          in: query
+          schema:
+            type: integer
+        - name: assigneeId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: priority
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create and assign task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /v1/tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  /v1/tasks/{id}/verify:
+    post:
+      operationId: verifyTask
+      tags: [tasks]
+      summary: Manager verifies/closes task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskVerifyInput"
+      responses:
+        "200":
+          description: Verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+
+  # ATTENDANCE
+  /v1/ml-export:
+    get:
+      tags: [Analytics]
+      summary: Get automated HR features for ML
+      responses:
+        "200":
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+  /v1/verifications/claims:
+    get:
+      operationId: listClaims
+      tags: [Verifications]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Claim"
+    post:
+      operationId: createClaim
+      tags: [Verifications]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Claim"
+  /v1/verifications/claims/{claimId}/approve:
+    post:
+      operationId: approveClaim
+      tags: [Verifications]
+      parameters:
+        - name: claimId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimApprovalInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimApproval"
+  /v1/attendance:
+    get:
+      operationId: listAttendance
+      tags: [attendance]
+      summary: List attendance records
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Attendance records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Attendance"
+
+    post:
+      operationId: createAttendance
+      tags: [attendance]
+      summary: Clock in / create attendance record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttendanceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attendance"
+
+  /v1/attendance/{id}/clockout:
+    post:
+      operationId: clockOut
+      tags: [attendance]
+      summary: Clock out
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Clocked out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Attendance"
+
+  # TRAINING
+  /v1/training-programs:
+    get:
+      operationId: listTrainingPrograms
+      tags: [training]
+      summary: List training programs
+      responses:
+        "200":
+          description: Programs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrainingProgram"
+
+    post:
+      operationId: createTrainingProgram
+      tags: [training]
+      summary: Create training program
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingProgramInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingProgram"
+
+  /v1/trainings:
+    get:
+      operationId: listTrainings
+      tags: [training]
+      summary: List training enrollments
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Trainings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Training"
+
+    post:
+      operationId: createTraining
+      tags: [training]
+      summary: Enroll in training
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingInput"
+      responses:
+        "201":
+          description: Enrolled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Training"
+
+  /v1/trainings/{id}/complete:
+    post:
+      operationId: completeTraining
+      tags: [training]
+      summary: Mark training as completed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingCompleteInput"
+      responses:
+        "200":
+          description: Completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Training"
+
+  /v1/training-certifications:
+    get:
+      operationId: listTrainingCertifications
+      tags: [training]
+      summary: List uploaded training certifications
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrainingCertification"
+    post:
+      operationId: uploadTrainingCertification
+      tags: [training]
+      summary: Upload a training certification
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                document:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingCertification"
+
+  /v1/training-certifications/{id}/review:
+    patch:
+      operationId: reviewTrainingCertification
+      tags: [training]
+      summary: Approve or reject certification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainingCertificationReviewInput"
+      responses:
+        "200":
+          description: Reviewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingCertification"
+
+  # PROMOTIONS & RECOGNITION
+  /v1/promotions:
+    get:
+      operationId: listPromotions
+      tags: [promotions]
+      summary: List promotions
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Promotions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Promotion"
+
+    post:
+      operationId: createPromotion
+      tags: [promotions]
+      summary: Record promotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PromotionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Promotion"
+
+  /v1/recognitions:
+    get:
+      operationId: listRecognitions
+      tags: [promotions]
+      summary: List recognition badges
+      parameters:
+        - name: recipientId
+          in: query
+          schema:
+            type: integer
+        - name: giverId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recognitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Recognition"
+
+    post:
+      operationId: createRecognition
+      tags: [promotions]
+      summary: Give recognition badge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecognitionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Recognition"
+
+  # MEETINGS
+  /v1/meetings:
+    get:
+      operationId: listMeetings
+      tags: [meetings]
+      summary: List meetings
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Meetings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meeting"
+
+    post:
+      operationId: createMeeting
+      tags: [meetings]
+      summary: Schedule meeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+
+  /v1/meetings/{id}:
+    get:
+      operationId: getMeeting
+      tags: [meetings]
+      summary: Get meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Meeting
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+
+    patch:
+      operationId: updateMeeting
+      tags: [meetings]
+      summary: Update meeting (add minutes, action items)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+
+  /v1/meetings/{id}/respond:
+    post:
+      operationId: respondToMeeting
+      tags: [meetings]
+      summary: Accept or decline meeting invite
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingResponseInput"
+      responses:
+        "200":
+          description: Responded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+
+  # AUDIT LOG
+  /v1/audit-log:
+    get:
+      operationId: listAuditLog
+      tags: [audit]
+      summary: List audit log entries (HR/Super Admin only)
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: eventType
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Audit entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEntry"
+
+  /v1/audit-log/verify:
+    get:
+      operationId: verifyAuditIntegrity
+      tags: [audit]
+      summary: Verify chain integrity of audit log
+      responses:
+        "200":
+          description: Integrity result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditIntegrityResult"
+
+  # ML / PERFORMANCE DATA API
+  /v1/ml/employee/{empId}/performance-snapshot:
+    get:
+      operationId: getEmployeePerformanceSnapshot
+      tags: [ml]
+      summary: Get ML performance snapshot for employee
+      parameters:
+        - name: empId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Performance snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PerformanceSnapshot"
+
+  /v1/ml/organization/performance-snapshot:
+    get:
+      operationId: getOrganizationPerformanceSnapshot
+      tags: [ml]
+      summary: Get ML performance snapshot for all employees
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Performance snapshots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerformanceSnapshot"
+
+  /v1/ml/employee/{empId}/history:
+    get:
+      operationId: getEmployeePerformanceHistory
+      tags: [ml]
+      summary: Get time-series performance metrics (last 12 months)
+      parameters:
+        - name: empId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Performance history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PerformanceSnapshot"
+
+  /v1/ml/employee/{empId}/audit-trail:
+    get:
+      operationId: getEmployeeAuditTrail
+      tags: [ml]
+      summary: Full tamper-proof audit trail for one employee
+      parameters:
+        - name: empId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Audit trail
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditEntry"
+
+  /v1/ml/appraisal/trigger:
+    post:
+      operationId: triggerAppraisal
+      tags: [ml]
+      summary: Trigger data collection snapshot for appraisal cycle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppraisalTriggerInput"
+      responses:
+        "200":
+          description: Triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppraisalTriggerResult"
+
+  # HR DASHBOARD
+  /v1/dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Organization-wide performance overview
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /v1/dashboard/department-metrics:
+    get:
+      operationId: getDepartmentMetrics
+      tags: [dashboard]
+      summary: Department-wise metrics comparison
+      responses:
+        "200":
+          description: Department metrics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DepartmentMetrics"
+
+  /v1/dashboard/risk-flags:
+    get:
+      operationId: getRiskFlags
+      tags: [dashboard]
+      summary: Employees with declining metrics
+      responses:
+        "200":
+          description: Risk flags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RiskFlag"
+
+  /v1/dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Recent activity feed across the org
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  # CHAT
+  /v1/chat/conversations:
+    get:
+      operationId: listConversations
+      tags: [chat]
+      summary: List user conversations
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+
+    post:
+      operationId: createConversation
+      tags: [chat]
+      summary: Create conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /v1/chat/conversations/{id}/messages:
+    get:
+      operationId: listMessages
+      tags: [chat]
+      summary: List conversation messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+
+  /v1/chat/upload:
+    post:
+      operationId: uploadChatAttachment
+      tags: [chat]
+      summary: Upload attachment
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    # AUTH
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    RegisterInput:
+      type: object
+      required: [organizationName, email, password, name]
+      properties:
+        organizationName:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        name:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    # ORGANIZATION
+    Organization:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        domain:
+          type: ["string", "null"]
+        settings:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    OrganizationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        domain:
+          type: string
+
+    # DEPARTMENT
+    Department:
+      type: object
+      required: [id, name, orgId]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        name:
+          type: string
+        headId:
+          type: ["integer", "null"]
+        headName:
+          type: ["string", "null"]
+        employeeCount:
+          type: integer
+
+    DepartmentInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        headId:
+          type: integer
+
+    DepartmentUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        headId:
+          type: integer
+
+    # USER
+    User:
+      type: object
+      required: [id, name, email, role, orgId]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, hr_admin, manager, employee]
+        departmentId:
+          type: ["integer", "null"]
+        departmentName:
+          type: ["string", "null"]
+        managerId:
+          type: ["integer", "null"]
+        managerName:
+          type: ["string", "null"]
+        hireDate:
+          type: ["string", "null"]
+          format: date
+        jobTitle:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    UserInput:
+      type: object
+      required: [name, email, role]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        role:
+          type: string
+          enum: [hr_admin, manager, employee]
+        departmentId:
+          type: integer
+        managerId:
+          type: integer
+        hireDate:
+          type: string
+          format: date
+        jobTitle:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum: [hr_admin, manager, employee]
+        departmentId:
+          type: integer
+        managerId:
+          type: integer
+        jobTitle:
+          type: string
+
+    # DOCUMENT
+    Document:
+      type: object
+      required: [id, orgId, uploaderId, title, status, version, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        uploaderId:
+          type: integer
+        uploaderName:
+          type: ["string", "null"]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        deadline:
+          type: ["string", "null"]
+          format: date-time
+        status:
+          type: string
+          enum: [pending, submitted, under_review, approved, rejected]
+        version:
+          type: integer
+        submittedAt:
+          type: ["string", "null"]
+          format: date-time
+        verifiedAt:
+          type: ["string", "null"]
+          format: date-time
+        verifierId:
+          type: ["integer", "null"]
+        verifierName:
+          type: ["string", "null"]
+        rejectionReason:
+          type: ["string", "null"]
+        fileUrl:
+          type: ["string", "null"]
+        fileType:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    DocumentInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        fileUrl:
+          type: string
+        fileType:
+          type: string
+        departmentId:
+          type: integer
+
+    DocumentUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+
+    DocumentVerifyInput:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [approve, reject]
+        rejectionReason:
+          type: string
+
+    # PROJECT
+    Project:
+      type: object
+      required: [id, orgId, title, status, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        deadline:
+          type: ["string", "null"]
+          format: date-time
+        status:
+          type: string
+          enum: [active, completed, on_hold]
+        managerId:
+          type: ["integer", "null"]
+        managerName:
+          type: ["string", "null"]
+        taskCount:
+          type: integer
+        completedTaskCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    ProjectInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        managerId:
+          type: integer
+
+    ProjectUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [active, completed, on_hold]
+        managerId:
+          type: integer
+
+    # TASK
+    Task:
+      type: object
+      required: [id, orgId, title, priority, status, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        projectId:
+          type: ["integer", "null"]
+        projectTitle:
+          type: ["string", "null"]
+        assigneeId:
+          type: ["integer", "null"]
+        assigneeName:
+          type: ["string", "null"]
+        assignerId:
+          type: ["integer", "null"]
+        assignerName:
+          type: ["string", "null"]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+        status:
+          type: string
+          enum: [assigned, in_progress, submitted, verified, closed]
+        deadline:
+          type: ["string", "null"]
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+        verifiedAt:
+          type: ["string", "null"]
+          format: date-time
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        isOverdue:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    TaskInput:
+      type: object
+      required: [title, priority]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        projectId:
+          type: integer
+        assigneeId:
+          type: integer
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+        deadline:
+          type: string
+          format: date-time
+
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [assigned, in_progress, submitted, verified, closed]
+        priority:
+          type: string
+          enum: [critical, high, medium, low]
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        deadline:
+          type: string
+          format: date-time
+
+    TaskVerifyInput:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [verify, reject]
+        notes:
+          type: string
+
+    # ATTENDANCE
+    Attendance:
+      type: object
+      required: [id, orgId, userId, date, clockIn]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: ["string", "null"]
+        date:
+          type: string
+          format: date
+        clockIn:
+          type: string
+          format: date-time
+        clockOut:
+          type: ["string", "null"]
+          format: date-time
+        hoursWorked:
+          type: ["number", "null"]
+        isOvertime:
+          type: boolean
+        isRemote:
+          type: boolean
+        isSick:
+          type: boolean
+        leaveType:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        latitude:
+          type: ["number", "null"]
+        longitude:
+          type: ["number", "null"]
+
+    AttendanceInput:
+      type: object
+      required: [date]
+      properties:
+        date:
+          type: string
+          format: date
+        isRemote:
+          type: boolean
+        isSick:
+          type: boolean
+        leaveType:
+          type: string
+        notes:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+
+    # VERIFICATIONS
+    Claim:
+      type: object
+      required: [id, orgId, userId, claimType, description, status, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        userId:
+          type: integer
+        claimType:
+          type: string
+        description:
+          type: string
+        proofUrl:
+          type: ["string", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ClaimInput:
+      type: object
+      required: [claimType, description]
+      properties:
+        claimType:
+          type: string
+        description:
+          type: string
+        proofUrl:
+          type: string
+
+    ClaimApproval:
+      type: object
+      required: [id, orgId, claimId, reviewerId, status, reason, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        claimId:
+          type: integer
+        reviewerId:
+          type: integer
+        status:
+          type: string
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ClaimApprovalInput:
+      type: object
+      required: [status, reason]
+      properties:
+        status:
+          type: string
+        reason:
+          type: string
+
+    # TRAINING
+    TrainingProgram:
+      type: object
+      required: [id, orgId, title, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        durationHours:
+          type: ["number", "null"]
+        deadline:
+          type: ["string", "null"]
+          format: date-time
+        createdById:
+          type: ["integer", "null"]
+        enrollmentCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    TrainingProgramInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        durationHours:
+          type: number
+        deadline:
+          type: string
+          format: date-time
+
+    Training:
+      type: object
+      required: [id, orgId, userId, programId, status, enrolledAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: ["string", "null"]
+        programId:
+          type: integer
+        programTitle:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [enrolled, in_progress, completed, failed]
+        isAssigned:
+          type: boolean
+        score:
+          type: ["number", "null"]
+        hoursSpent:
+          type: ["number", "null"]
+        enrolledAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
+
+    TrainingInput:
+      type: object
+      required: [programId]
+      properties:
+        programId:
+          type: integer
+        userId:
+          type: integer
+        isAssigned:
+          type: boolean
+
+    TrainingCompleteInput:
+      type: object
+      required: [score]
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        hoursSpent:
+          type: number
+
+    TrainingCertification:
+      type: object
+      required: [id, orgId, userId, title, documentUrl, status, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: ["string", "null"]
+        userRole:
+          type: ["string", "null"]
+        title:
+          type: string
+        documentUrl:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+        trainingHours:
+          type: ["number", "null"]
+        reviewedBy:
+          type: ["integer", "null"]
+        reviewerName:
+          type: ["string", "null"]
+        reviewedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    TrainingCertificationReviewInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
+        trainingHours:
+          type: number
+
+    # PROMOTION
+    Promotion:
+      type: object
+      required: [id, orgId, userId, oldRole, newRole, promotedAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        userId:
+          type: integer
+        userName:
+          type: ["string", "null"]
+        oldRole:
+          type: string
+        newRole:
+          type: string
+        promotedById:
+          type: ["integer", "null"]
+        promotedByName:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        promotedAt:
+          type: string
+          format: date-time
+
+    PromotionInput:
+      type: object
+      required: [userId, oldRole, newRole]
+      properties:
+        userId:
+          type: integer
+        oldRole:
+          type: string
+        newRole:
+          type: string
+        notes:
+          type: string
+
+    # RECOGNITION
+    Recognition:
+      type: object
+      required: [id, orgId, giverId, recipientId, badge, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        giverId:
+          type: integer
+        giverName:
+          type: ["string", "null"]
+        recipientId:
+          type: integer
+        recipientName:
+          type: ["string", "null"]
+        badge:
+          type: string
+        message:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    RecognitionInput:
+      type: object
+      required: [recipientId, badge]
+      properties:
+        recipientId:
+          type: integer
+        badge:
+          type: string
+        message:
+          type: string
+
+    # MEETING
+    Meeting:
+      type: object
+      required: [id, orgId, organizerId, title, scheduledAt, status, createdAt]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        organizerId:
+          type: integer
+        organizerName:
+          type: ["string", "null"]
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        scheduledAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: ["integer", "null"]
+        agenda:
+          type: ["string", "null"]
+        minutes:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled]
+        attendees:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeetingAttendee"
+        createdAt:
+          type: string
+          format: date-time
+
+    MeetingAttendee:
+      type: object
+      required: [userId, response]
+      properties:
+        userId:
+          type: integer
+        userName:
+          type: ["string", "null"]
+        response:
+          type: string
+          enum: [pending, accepted, declined]
+
+    MeetingInput:
+      type: object
+      required: [title, scheduledAt]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        agenda:
+          type: string
+        attendeeIds:
+          type: array
+          items:
+            type: integer
+
+    MeetingUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        agenda:
+          type: string
+        minutes:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled]
+
+    MeetingResponseInput:
+      type: object
+      required: [response]
+      properties:
+        response:
+          type: string
+          enum: [accepted, declined]
+
+    # AUDIT
+    AuditEntry:
+      type: object
+      required: [id, orgId, actorId, eventType, timestamp, hash]
+      properties:
+        id:
+          type: integer
+        orgId:
+          type: integer
+        actorId:
+          type: integer
+        actorName:
+          type: ["string", "null"]
+        eventType:
+          type: string
+        entityId:
+          type: ["string", "null"]
+        payload:
+          type: ["string", "null"]
+        timestamp:
+          type: string
+          format: date-time
+        hash:
+          type: string
+        previousHash:
+          type: ["string", "null"]
+
+    AuditIntegrityResult:
+      type: object
+      required: [verified, totalEntries, brokenChainAt]
+      properties:
+        verified:
+          type: boolean
+        totalEntries:
+          type: integer
+        brokenChainAt:
+          type: ["integer", "null"]
+        message:
+          type: string
+
+    # ML / PERFORMANCE
+    WorkBehaviorMetrics:
+      type: object
+      properties:
+        workHoursPerWeek:
+          type: number
+        overtimeHours:
+          type: number
+        sickDays:
+          type: integer
+        projectsHandled:
+          type: integer
+        tasksCompletedOnTimeRate:
+          type: number
+        onTimeSubmissionRate:
+          type: number
+        revisionRequestRate:
+          type: number
+        trainingTimesLastYear:
+          type: integer
+        yearsSinceLastPromotion:
+          type: number
+        experienceYearsInCurrentRole:
+          type: number
+        totalWorkExperienceYears:
+          type: number
+
+    EngagementMetrics:
+      type: object
+      properties:
+        avgResponseTimeMinutes:
+          type: number
+        meetingAttendanceRate:
+          type: number
+        communicationFrequencyScore:
+          type: number
+        collaborationScore:
+          type: number
+        actionItemsCompletedRate:
+          type: number
+
+    SatisfactionProxyMetrics:
+      type: object
+      properties:
+        environmentSatisfactionScore:
+          type: number
+        workLifeBalanceScore:
+          type: number
+        jobInvolvementScore:
+          type: number
+        relationshipSatisfactionScore:
+          type: number
+        jobSatisfactionScore:
+          type: number
+
+    AuditIntegrityMetrics:
+      type: object
+      properties:
+        dataCompletenessScore:
+          type: number
+        tamperProofVerified:
+          type: boolean
+        lastVerifiedTimestamp:
+          type: string
+          format: date-time
+
+    PerformanceSnapshot:
+      type: object
+      required: [empId, snapshotDate, appraisalPeriod]
+      properties:
+        empId:
+          type: integer
+        empName:
+          type: ["string", "null"]
+        snapshotDate:
+          type: string
+          format: date
+        appraisalPeriod:
+          type: string
+        workBehaviorMetrics:
+          $ref: "#/components/schemas/WorkBehaviorMetrics"
+        engagementMetrics:
+          $ref: "#/components/schemas/EngagementMetrics"
+        satisfactionProxyMetrics:
+          $ref: "#/components/schemas/SatisfactionProxyMetrics"
+        auditIntegrity:
+          $ref: "#/components/schemas/AuditIntegrityMetrics"
+
+    AppraisalTriggerInput:
+      type: object
+      required: [period]
+      properties:
+        period:
+          type: string
+          description: "e.g. 2024-Q4"
+        departmentId:
+          type: integer
+        userIds:
+          type: array
+          items:
+            type: integer
+
+    AppraisalTriggerResult:
+      type: object
+      required: [triggered, snapshotCount, period]
+      properties:
+        triggered:
+          type: boolean
+        snapshotCount:
+          type: integer
+        period:
+          type: string
+        message:
+          type: string
+
+    # DASHBOARD
+    DashboardSummary:
+      type: object
+      properties:
+        totalEmployees:
+          type: integer
+        totalDepartments:
+          type: integer
+        activeProjects:
+          type: integer
+        tasksCompletedThisMonth:
+          type: integer
+        tasksOverdue:
+          type: integer
+        documentsSubmittedThisMonth:
+          type: integer
+        documentsApprovalRate:
+          type: number
+        avgTaskOnTimeRate:
+          type: number
+        avgMeetingAttendanceRate:
+          type: number
+        trainingsCompletedThisMonth:
+          type: integer
+        recognitionsThisMonth:
+          type: integer
+        attendanceRateToday:
+          type: number
+
+    DepartmentMetrics:
+      type: object
+      required: [departmentId, departmentName]
+      properties:
+        departmentId:
+          type: integer
+        departmentName:
+          type: string
+        employeeCount:
+          type: integer
+        avgTaskOnTimeRate:
+          type: number
+        avgDocumentApprovalRate:
+          type: number
+        avgMeetingAttendanceRate:
+          type: number
+        avgTrainingCompletionRate:
+          type: number
+        overdueTaskCount:
+          type: integer
+
+    RiskFlag:
+      type: object
+      required: [userId, userName, riskLevel, reasons]
+      properties:
+        userId:
+          type: integer
+        userName:
+          type: string
+        departmentName:
+          type: ["string", "null"]
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        reasons:
+          type: array
+          items:
+            type: string
+        tasksOnTimeRate:
+          type: ["number", "null"]
+        attendanceRate:
+          type: ["number", "null"]
+
+    ActivityItem:
+      type: object
+      required: [id, type, actorName, description, timestamp]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        actorId:
+          type: integer
+        actorName:
+          type: string
+        description:
+          type: string
+        entityId:
+          type: ["integer", "null"]
+        timestamp:
+          type: string
+          format: date-time
+
+    # CHAT
+    Conversation:
+      type: object
+      required: [id, isGroup, createdAt]
+      properties:
+        id:
+          type: integer
+        isGroup:
+          type: boolean
+        name:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        participants:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+              name:
+                type: string
+              email:
+                type: string
+
+    ConversationInput:
+      type: object
+      required: [participantIds]
+      properties:
+        participantIds:
+          type: array
+          items:
+            type: integer
+        isGroup:
+          type: boolean
+        name:
+          type: string
+
+    ChatMessage:
+      type: object
+      required: [id, conversationId, senderId, createdAt]
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        senderId:
+          type: integer
+        senderName:
+          type: string
+        content:
+          type: ["string", "null"]
+        attachmentUrl:
+          type: ["string", "null"]
+        attachmentType:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time

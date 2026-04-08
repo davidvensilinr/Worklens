@@ -1,0 +1,461 @@
+# AI Prompt — Tamper-Proof Employee Workspace Platform
+
+---
+
+## MASTER PROMPT
+
+You are a senior full stack software architect. Build a complete, production-ready, tamper-proof employee workspace platform from scratch. This platform is a unified organizational ecosystem where every employee action is automatically tracked, timestamped, and stored as structured data. The platform is NOT an HR tool — it is a complete digital workspace where work actually happens, and every interaction becomes tamper-proof performance evidence.
+
+---
+
+## PRODUCT VISION
+
+Build a platform called **"WorkProof"** (or suggest a better name) — a unified workspace where employees collaborate, communicate, and deliver work, while the system silently and automatically collects every measurable performance signal in the background. There are no manual surveys, no self-assessments, no manager ratings for performance data collection. The platform IS the proof. Every action is cryptographically timestamped and cannot be faked, backdated, or manipulated.
+
+This platform feeds a separate ML pipeline (not part of this build) that predicts employee performance scores and salary hike recommendations. This platform's sole responsibility is to collect, store, and expose that data cleanly via API.
+
+---
+
+## CORE MODULES TO BUILD
+
+### Module 1 — Authentication & Organization Setup
+- Multi-tenant architecture (each organization is isolated)
+- Role based access control: Super Admin, HR Admin, Manager, Employee
+- Organization onboarding: company name, departments, teams
+- Employee onboarding: profile creation, role assignment, team assignment, reporting manager assignment
+- SSO support (Google, Microsoft)
+- JWT based authentication with refresh tokens
+- Every login/logout event timestamped and stored
+
+### Module 2 — Document & File Workspace
+- Upload PDF, DOC, DOCX, XLSX, images, and other file types
+- Every file upload is timestamped (cannot be altered)
+- Deadline tagging: every file/task can have a deadline attached
+- Submission status: Pending → Submitted → Under Review → Approved / Rejected
+- Version control: every edit creates a new version with timestamp and editor identity
+- Multi-level verification workflow:
+  - Employee submits → Manager reviews → HR approves
+  - Each step timestamped independently
+- File commenting and annotation system
+- Rejection with reason — employee must resubmit
+- Resubmission tracked separately (counts as revision)
+
+**Data collected for ML:**
+- `on_time_submission_rate` — % of files submitted before deadline
+- `revision_request_rate` — % of submissions that were rejected and resubmitted
+- `avg_resubmission_time` — how quickly employee corrects and resubmits
+- `total_documents_submitted` — volume of work output
+- `verification_pass_rate` — % of submissions approved on first attempt
+
+### Module 3 — Task & Project Tracker
+- Project creation with milestones and deadlines
+- Task assignment: assigned by manager, accepted by employee
+- Task priority levels: Critical, High, Medium, Low
+- Task status: Assigned → In Progress → Submitted → Verified → Closed
+- Dependency mapping: Task B cannot start until Task A is verified
+- Progress percentage updated by employee, verified by manager
+- Overdue detection: automatic flagging when deadline passes without completion
+- Manager cannot close a task without verification step
+- Employee cannot mark task complete without manager verification
+
+**Data collected for ML:**
+- `tasks_completed_on_time_rate` — % of tasks completed before deadline
+- `projects_handled` — total projects participated in
+- `overdue_task_count` — number of tasks missed deadline
+- `task_complexity_score` — weighted average of task priorities completed
+- `avg_task_completion_time` — efficiency metric
+
+### Module 4 — Real Time Communication (Chat)
+- Team channels (department-wide)
+- Direct messaging between employees
+- Group messaging
+- All messages timestamped and stored (cannot be deleted by users)
+- Message read receipts tracked
+- Response time calculated automatically
+- @mentions tracked — who tags whom, response time to mentions
+- File sharing within chat (linked to Module 2)
+- Message search and audit trail accessible to HR Admin only
+
+**Data collected for ML:**
+- `avg_response_time_minutes` — how quickly employee responds to messages
+- `communication_frequency_score` — messages sent per working day
+- `mention_response_rate` — % of @mentions responded to within 1 hour
+- `collaboration_score` — diversity of teammates communicated with
+
+### Module 5 — Voice & Video Calls
+- One-on-one voice calls
+- One-on-one video calls
+- Group calls / team meetings
+- Call scheduling via integrated calendar
+- Call duration tracked automatically
+- Call attendance: who joined, when they joined, when they left
+- Recording option (with consent notification)
+- Missed call tracking
+- All call metadata stored (not content, unless recorded with consent)
+
+**Data collected for ML:**
+- `meeting_attendance_rate` — % of scheduled calls attended
+- `avg_call_duration` — engagement in meetings
+- `calls_initiated` — proactive communication score
+- `missed_calls_rate` — availability metric
+
+### Module 6 — Meeting Scheduler & Calendar
+- Schedule one-on-one and group meetings
+- Invite team members — acceptance/decline tracked
+- Agenda creation mandatory before meeting
+- Meeting minutes recorded post-meeting
+- Action items assigned during meeting with deadlines
+- Action item completion tracked (links to Task Tracker)
+- Recurring meeting support
+- Calendar view: daily, weekly, monthly
+- Conflict detection: cannot schedule overlapping meetings
+
+**Data collected for ML:**
+- `meeting_acceptance_rate` — % of meeting invites accepted
+- `action_items_completed_rate` — % of meeting action items completed on time
+- `meetings_organized` — leadership and initiative score
+- `agenda_completion_rate` — % of agenda points covered in meeting
+
+### Module 7 — Reminder & Deadline Engine
+- Auto reminders sent at: 1 week, 3 days, 1 day, 2 hours before deadline
+- Employee must acknowledge reminder (click confirm)
+- Acknowledgment timestamp stored
+- Escalation engine: if deadline missed after acknowledgment → auto notify manager
+- Manager escalation if unresolved after 24 hours → auto notify HR
+- Reminder history fully auditable
+- Custom reminders: employee can set personal reminders for tasks
+
+**Data collected for ML:**
+- `deadline_acknowledgment_rate` — % of reminders acknowledged
+- `post_acknowledgment_miss_rate` — missed deadlines despite acknowledging
+- `escalation_frequency` — how often work escalates to manager/HR
+
+### Module 8 — Attendance & Overtime Tracker
+- Clock in / clock out system (manual or auto via platform activity)
+- Work hours per day automatically calculated
+- Overtime detection: hours beyond standard 8 hours/day
+- Sick day logging: employee marks sick day with reason
+- Leave management: apply, approve, track leave balance
+- Remote work logging: employee marks remote/office
+- Late arrival tracking
+- All attendance data tamper-proof — cannot be edited retroactively
+
+**Data collected for ML:**
+- `work_hours_per_week` — total hours worked
+- `overtime_hours` — extra hours put in
+- `sick_days` — reliability indicator
+- `attendance_rate` — % of working days present
+- `late_arrival_rate` — punctuality metric
+
+### Module 9 — Training & Learning Tracker
+- Training program creation by HR
+- Employee enrollment and completion tracking
+- Training score / assessment result stored
+- Training hours automatically calculated from completion
+- Certification upload and verification
+- Training completion deadlines and reminders
+- Self-initiated training vs assigned training tracked separately
+
+**Data collected for ML:**
+- `training_times_last_year` — number of trainings completed
+- `training_completion_rate` — % of assigned trainings completed
+- `avg_training_score` — quality of learning
+- `self_initiated_training_count` — proactive learning behavior
+
+### Module 10 — Promotion & Recognition History
+- HR logs promotion events: date, old role, new role
+- Manager can give recognition badges to employees
+- Peer recognition: employees can recognize each other
+- All recognition events timestamped
+- Promotion history immutable once entered by HR
+- Years since last promotion auto calculated
+
+**Data collected for ML:**
+- `years_since_last_promotion` — motivation and achievement signal
+- `promotions_count` — career growth rate
+- `recognition_received_count` — peer and manager appreciation
+- `recognition_given_count` — team player behavior
+
+### Module 11 — Performance Data API (ML Feed)
+This is the most critical module — it exposes all collected data to the external ML pipeline.
+
+Build a secure REST API with the following endpoints:
+
+```
+GET  /api/v1/ml/employee/{emp_id}/performance-snapshot
+     Returns all ML-ready features for one employee
+
+GET  /api/v1/ml/organization/{org_id}/performance-snapshot
+     Returns ML-ready features for all employees in org
+
+GET  /api/v1/ml/employee/{emp_id}/history?months=12
+     Returns time series of performance metrics
+
+POST /api/v1/ml/appraisal/trigger
+     Triggers data collection snapshot for appraisal cycle
+
+GET  /api/v1/ml/employee/{emp_id}/audit-trail
+     Returns full tamper-proof audit trail for one employee
+```
+
+**The performance snapshot response must include exactly these fields
+(these feed directly into the ML models):**
+
+```json
+{
+  "emp_id": "E1001",
+  "snapshot_date": "2025-03-01",
+  "appraisal_period": "2024-Q4",
+
+  "work_behavior_metrics": {
+    "work_hours_per_week": 47.3,
+    "overtime_hours": 12.5,
+    "sick_days": 3,
+    "projects_handled": 8,
+    "tasks_completed_on_time_rate": 0.87,
+    "on_time_submission_rate": 0.91,
+    "revision_request_rate": 0.12,
+    "training_times_last_year": 4,
+    "years_since_last_promotion": 2,
+    "experience_years_in_current_role": 3,
+    "total_work_experience_years": 7
+  },
+
+  "engagement_metrics": {
+    "avg_response_time_minutes": 18.4,
+    "meeting_attendance_rate": 0.94,
+    "communication_frequency_score": 7.2,
+    "collaboration_score": 0.83,
+    "action_items_completed_rate": 0.88
+  },
+
+  "satisfaction_proxy_metrics": {
+    "environment_satisfaction_score": 3.4,
+    "work_life_balance_score": 3.1,
+    "job_involvement_score": 3.6,
+    "relationship_satisfaction_score": 3.2,
+    "job_satisfaction_score": 3.3
+  },
+
+  "audit_integrity": {
+    "data_completeness_score": 0.97,
+    "tamper_proof_verified": true,
+    "last_verified_timestamp": "2025-03-01T00:00:00Z"
+  }
+}
+```
+
+**Note on satisfaction proxy metrics:**
+Since there are no manual surveys, calculate satisfaction scores
+automatically from behavioral signals:
+
+- `environment_satisfaction_score`:
+  Derived from: attendance rate + overtime willingness +
+  escalation frequency (inverse) + sick days (inverse)
+
+- `work_life_balance_score`:
+  Derived from: overtime hours (inverse) + sick days (inverse) +
+  late arrival rate (inverse) + leave utilization rate
+
+- `job_involvement_score`:
+  Derived from: response time (inverse) + meeting attendance +
+  self initiated training + tasks completed rate
+
+- `relationship_satisfaction_score`:
+  Derived from: collaboration score + peer recognition given +
+  mention response rate + communication frequency
+
+- `job_satisfaction_score`:
+  Derived from: recognition received + promotion recency +
+  self initiated training + action items completed rate
+
+All scores normalized to 1-5 scale to match ML model input format.
+
+### Module 12 — HR Dashboard
+- Organization-wide performance overview
+- Department wise metrics comparison
+- Individual employee performance cards
+- Risk flags: employees with declining metrics
+- Appraisal cycle management: start, track, close
+- Export data as CSV/Excel for external ML pipeline
+- Audit trail viewer: full history of any employee
+- Anomaly detection: sudden drops in metrics flagged
+
+---
+
+## ANTI-TAMPER & AUDIT ARCHITECTURE
+
+Every single event in the platform must follow this pattern:
+
+```
+Event occurs (file upload, message sent, task completed)
+        ↓
+Event logged with:
+→ Event ID (UUID)
+→ Actor ID (who did it)
+→ Timestamp (UTC, server side — never client side)
+→ Event type
+→ Payload (what happened)
+→ SHA-256 hash of (Event ID + Actor ID + Timestamp + Payload)
+        ↓
+Stored in append-only audit log table
+(no UPDATE or DELETE permissions on this table)
+        ↓
+Each record links to previous record hash
+(blockchain-style chain — tampering one breaks the chain)
+```
+
+**Database rules for audit table:**
+- No UPDATE allowed — ever
+- No DELETE allowed — ever
+- INSERT only
+- Read access: HR Admin and Super Admin only
+- Hash verification endpoint available for integrity checks
+
+---
+
+## TECH STACK
+
+### Frontend
+```
+Framework  : React.js with TypeScript
+Styling    : Tailwind CSS
+State      : Redux Toolkit
+Real time  : Socket.io client
+Video/Voice: WebRTC (with mediasoup SFU for group calls)
+Charts     : Recharts (for HR dashboard)
+File viewer: React-PDF, Mammoth.js
+```
+
+### Backend
+```
+Primary API      : Node.js with Express.js (TypeScript)
+ML Data API      : FastAPI (Python) — separate microservice
+Real time server : Socket.io
+Authentication   : JWT + refresh tokens
+File processing  : Multer + AWS S3
+Email/Reminders  : NodeMailer + Bull queue (Redis)
+Video/Voice      : mediasoup or Daily.co API
+```
+
+### Database
+```
+Primary DB    : PostgreSQL (structured data)
+Real time/Chat: MongoDB (message logs)
+Cache         : Redis (sessions, queues, real time)
+File storage  : AWS S3
+Search        : Elasticsearch (message and document search)
+```
+
+### Infrastructure
+```
+Containerization : Docker + Docker Compose
+Orchestration    : Kubernetes (for scale)
+Cloud            : AWS (EC2, S3, RDS, ElastiCache)
+CDN              : CloudFront
+CI/CD            : GitHub Actions
+Monitoring       : Datadog or AWS CloudWatch
+```
+
+---
+
+## DATABASE SCHEMA (Core Tables)
+
+```sql
+-- Organizations (multi-tenant)
+organizations: id, name, domain, created_at, settings
+
+-- Users
+users: id, org_id, name, email, role, department_id,
+       manager_id, hire_date, created_at
+
+-- Departments
+departments: id, org_id, name, head_id
+
+-- Documents
+documents: id, org_id, uploader_id, title, deadline,
+           status, version, submitted_at, verified_at,
+           verifier_id, s3_key, hash
+
+-- Tasks
+tasks: id, org_id, project_id, assignee_id, assigner_id,
+       title, priority, status, deadline, completed_at,
+       verified_at, verifier_id
+
+-- Messages
+messages: id, org_id, sender_id, channel_id,
+          content_hash, sent_at, read_at
+
+-- Calls
+calls: id, org_id, initiator_id, type, started_at,
+       ended_at, duration_seconds, participants
+
+-- Meetings
+meetings: id, org_id, organizer_id, title, scheduled_at,
+          agenda, minutes, status
+
+-- Attendance
+attendance: id, org_id, emp_id, date, clock_in,
+            clock_out, hours_worked, is_overtime,
+            is_remote, is_sick
+
+-- Training
+trainings: id, org_id, emp_id, program_id,
+           enrolled_at, completed_at, score, hours
+
+-- Promotions
+promotions: id, org_id, emp_id, promoted_at,
+            old_role, new_role, promoted_by
+
+-- Audit Log (append only — no update/delete)
+audit_log: id, org_id, actor_id, event_type,
+           entity_id, payload, timestamp,
+           hash, previous_hash
+```
+
+---
+
+## IMPORTANT CONSTRAINTS
+
+1. **Never build a manual survey or self-assessment form** — all satisfaction scores are derived algorithmically from behavioral data
+
+2. **All timestamps must be server-side UTC** — never trust client-side timestamps
+
+3. **The audit log table must have database-level constraints** preventing UPDATE and DELETE operations
+
+4. **The ML API must return data in exactly the schema specified** in Module 11 — the external ML pipeline depends on this contract
+
+5. **Multi-tenant isolation is non-negotiable** — one organization must never see another organization's data, even accidentally
+
+6. **The platform collects data only** — it does NOT make any performance judgments, ratings, or hike recommendations. That is the external ML pipeline's job.
+
+7. **All file uploads must be virus scanned** before storage
+
+8. **GDPR compliance** — employees can request their data export, organization admins can delete employee data on offboarding (except audit log which is retained per legal requirements)
+
+9. **Mobile responsive** — the platform must work on mobile browsers
+
+10. **API versioning** — all APIs must be versioned (/api/v1/) to support future ML model updates without breaking changes
+
+---
+
+## DELIVERABLES EXPECTED
+
+1. Complete folder structure and architecture
+2. Database schema with all tables, indexes, and constraints
+3. All API endpoints with request/response schemas
+4. Frontend with all 12 modules fully functional
+5. Real time features (chat, calls) working
+6. Anti-tamper audit system implemented
+7. ML Data API returning correct performance snapshot schema
+8. HR Dashboard with metrics and visualizations
+9. Docker Compose setup for local development
+10. README with setup instructions
+
+---
+
+## FINAL NOTE TO THE AI BUILDING THIS
+
+This platform's most critical output is the ML performance snapshot API (Module 11). Every other module exists to feed data into this API. When in doubt about what data to collect or store, ask: "Does this help calculate the performance metrics listed in the ML snapshot schema?" If yes — collect it. If no — it is optional.
+
+The platform must never make performance judgments. It only collects evidence. The judgment happens in the external ML pipeline. Keep these two concerns completely separate.

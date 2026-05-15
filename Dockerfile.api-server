@@ -1,0 +1,60 @@
+# ==========================================
+# Dockerfile for WorkLens API Server
+# Designed for Render or similar Docker hosts
+# ==========================================
+
+# -- Stage 1: Build Environment --
+FROM node:20-slim AS builder
+
+# Install build tools needed for bcrypt native compilation
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
+# Enable pnpm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+# Set the working directory
+WORKDIR /app
+
+# Copy root workspace configuration files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+
+# Copy all the shared libraries and the API server source code
+COPY lib/ ./lib/
+COPY artifacts/api-server/ ./artifacts/api-server/
+
+# Install dependencies (frozen-lockfile ensures deterministic builds)
+RUN pnpm install --frozen-lockfile
+
+# Build the API server
+WORKDIR /app/artifacts/api-server
+RUN pnpm run build
+
+
+# -- Stage 2: Production Environment --
+FROM node:20-slim
+
+# Install minimal runtime dependencies for bcrypt
+RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy only the necessary built files from the builder stage
+COPY --from=builder /app /app
+
+# The API server runs on port 3000
+EXPOSE 3000
+
+# Set environment to production
+ENV NODE_ENV=production
+
+# Run as non-root user for security
+RUN groupadd -r worklens && useradd -r -g worklens worklens
+RUN chown -R worklens:worklens /app
+USER worklens
+
+WORKDIR /app/artifacts/api-server
+
+# Run the compiled API server directly (letting the host inject environment variables)
+CMD ["node", "--enable-source-maps", "./dist/index.mjs"]

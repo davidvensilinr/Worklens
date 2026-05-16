@@ -1,0 +1,64 @@
+# =============================================================
+# Render Infrastructure-as-Code
+# Defines the complete deployment: Database + API + Frontend
+# =============================================================
+# To use: Connect your GitHub repo to Render, and Render will
+# automatically read this file and create all services.
+# =============================================================
+
+databases:
+  - name: worklens-db
+    plan: free
+    databaseName: worklens
+    user: worklens_user
+    # ipAllowList: [] means only Render's private network can access it
+    ipAllowList: []
+
+services:
+  # --- Backend API Server (Docker-based) ---
+  - type: web
+    name: worklens-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.api-server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: worklens-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true  # Render auto-generates a cryptographically secure random value
+      - key: CORS_ORIGIN
+        # Set this to your actual frontend URL after first deploy
+        value: https://worklens-frontend.onrender.com
+    healthCheckPath: /api/health
+
+  # --- Frontend Static Site ---
+  - type: web
+    name: worklens-frontend
+    runtime: static
+    plan: free
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build
+    staticPublishPath: ./artifacts/workproof/dist
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    routes:
+      # SPA fallback: serve index.html for all non-file routes
+      - type: rewrite
+        source: /*
+        destination: /index.html

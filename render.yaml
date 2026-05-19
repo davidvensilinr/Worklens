@@ -35,18 +35,20 @@ services:
       - key: CORS_ORIGIN
         # Set this to your actual frontend URL after first deploy
         value: https://worklens-frontend.onrender.com
-    healthCheckPath: /api/health
+    healthCheckPath: /api/healthz
 
   # --- Frontend Static Site ---
   - type: web
     name: worklens-frontend
     runtime: static
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && pnpm run build
-    staticPublishPath: ./artifacts/workproof/dist
+    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @workspace/workproof run build
+    staticPublishPath: ./artifacts/workproof/dist/public
     envVars:
       - key: NODE_VERSION
         value: "20"
+      - key: VITE_API_URL
+        value: https://worklens-api.onrender.com
     headers:
       - path: /*
         name: X-Frame-Options

@@ -101,28 +101,4 @@ app.use("/uploads", (req, res, next) => {
   next();
 }, express.static(path.join(process.cwd(), "uploads")));
 
-// --- Frontend Static Site Serving ---
-// Use import.meta.url to compute a reliable path relative to this bundle file.
-// Bundle lives at: artifacts/api-server/dist/index.mjs
-// Frontend lives at: artifacts/workproof/dist/public
-const __bundleDir = path.dirname(fileURLToPath(import.meta.url));
-const frontendDistPath = path.resolve(__bundleDir, "../../workproof/dist/public");
-
-logger.info({ frontendDistPath, exists: fs.existsSync(path.join(frontendDistPath, "index.html")) }, "Frontend static path resolved");
-
-if (process.env.NODE_ENV === "production") {
-  // Serve all static assets (JS, CSS, images)
-  app.use(express.static(frontendDistPath, { index: false }));
-
-  // SPA fallback: any non-API route returns index.html so React Router handles it
-  app.get(/(.*)/,  (req, res) => {
-    const indexPath = path.join(frontendDistPath, "index.html");
-    if (!fs.existsSync(indexPath)) {
-      res.status(503).send("Frontend build not found. Please ensure the build step completed successfully.");
-      return;
-    }
-    res.sendFile(indexPath);
-  });
-}
-
 export default app;

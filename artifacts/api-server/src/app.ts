@@ -99,4 +99,19 @@ app.use("/uploads", (req, res, next) => {
   next();
 }, express.static(path.join(process.cwd(), "uploads")));
 
+// --- Frontend Static Site Serving ---
+// In production, serve the built React app from the same server.
+// This avoids needing a separate static site deployment and eliminates CORS issues.
+const frontendDistPath = path.join(process.cwd(), "artifacts/workproof/dist/public");
+
+if (process.env.NODE_ENV === "production") {
+  // Serve all static assets (JS, CSS, images)
+  app.use(express.static(frontendDistPath));
+
+  // SPA fallback: any non-API route returns index.html so React Router handles it
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(frontendDistPath, "index.html"));
+  });
+}
+
 export default app;

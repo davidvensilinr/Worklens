@@ -34,7 +34,7 @@ services:
         generateValue: true  # Render auto-generates a cryptographically secure random value
       - key: CORS_ORIGIN
         # Set this to your actual frontend URL after first deploy
-        value: https://worklens-frontend.onrender.com
+        value: https://worklens-frontend.onrender.com,https://worklens-j9pz.onrender.com
     healthCheckPath: /api/healthz
 
   # --- Frontend Static Site ---
@@ -48,7 +48,7 @@ services:
       - key: NODE_VERSION
         value: "20"
       - key: VITE_API_URL
-        value: https://worklens-api.onrender.com
+        value: https://worklens-j9pz.onrender.com
     headers:
       - path: /*
         name: X-Frame-Options

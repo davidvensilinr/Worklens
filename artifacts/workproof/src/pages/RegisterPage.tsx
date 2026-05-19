@@ -41,11 +41,11 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="bg-[hsl(222,47%,11%)] border border-[hsl(217,32%,17%)] rounded-xl p-6 space-y-4">
           {[
-            { key: "organizationName", label: "Organization Name", type: "text", placeholder: "Acme Corp" },
-            { key: "name", label: "Your Full Name", type: "text", placeholder: "Jane Smith" },
-            { key: "email", label: "Work Email", type: "email", placeholder: "jane@company.com" },
-            { key: "password", label: "Password", type: "password", placeholder: "••••••••" },
-          ].map(({ key, label, type, placeholder }) => (
+            { key: "organizationName", label: "Organization Name", type: "text", placeholder: "Acme Corp", autoComplete: "organization" },
+            { key: "name", label: "Your Full Name", type: "text", placeholder: "Jane Smith", autoComplete: "name" },
+            { key: "email", label: "Work Email", type: "email", placeholder: "jane@company.com", autoComplete: "email" },
+            { key: "password", label: "Password", type: "password", placeholder: "••••••••", autoComplete: "new-password" },
+          ].map(({ key, label, type, placeholder, autoComplete }) => (
             <div key={key}>
               <label className="block text-xs font-medium text-[hsl(215,20%,65%)] mb-1.5 uppercase tracking-wide">{label}</label>
               <input
@@ -53,6 +53,7 @@ export default function RegisterPage() {
                 value={form[key as keyof typeof form]}
                 onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                 required
+                autoComplete={autoComplete}
                 className="w-full bg-[hsl(217,32%,17%)] border border-[hsl(217,32%,22%)] rounded-lg px-3 py-2.5 text-sm text-white placeholder-[hsl(215,20%,45%)] focus:outline-none focus:border-[hsl(186,100%,42%)] focus:ring-1 focus:ring-[hsl(186,100%,42%)/30%] transition-colors"
                 placeholder={placeholder}
               />

@@ -16,6 +16,9 @@ validateEnv();
 
 const app: Express = express();
 
+// Trust Render's reverse proxy for correct IP identification (fixes express-rate-limit error)
+app.set("trust proxy", 1);
+
 // --- Logging ---
 app.use(
   pinoHttp({

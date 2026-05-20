@@ -41,7 +41,9 @@ httpServer.listen(port, (err?: Error) => {
     process.exit(1);
   }
 
-  logger.info({ port }, "Server listening");
+  const dbUrl = process.env.DATABASE_URL || "";
+  const maskedDbUrl = dbUrl.replace(/:[^:@]+@/, ":****@");
+  logger.info({ port, dbHost: maskedDbUrl }, "Server listening and connected to database");
 
   // Background job for HR Warnings (> 24h unverified attendance photos)
   setInterval(async () => {

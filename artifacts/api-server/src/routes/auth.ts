@@ -15,7 +15,15 @@ router.post("/v1/auth/register", async (req, res): Promise<void> => {
     return;
   }
 
-  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email));
+  let existing;
+  try {
+    const res = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    existing = res[0];
+  } catch (err: any) {
+    req.log.error({ err, rawError: err.cause || err.message, stack: err.stack }, "RAW DB ERROR ON REGISTER");
+    res.status(500).json({ error: "Database error during registration", details: err.message });
+    return;
+  }
   if (existing) {
     res.status(400).json({ error: "Email already registered" });
     return;
@@ -53,7 +61,15 @@ router.post("/v1/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email));
+  let user;
+  try {
+    const res = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    user = res[0];
+  } catch (err: any) {
+    req.log.error({ err, rawError: err.cause || err.message, stack: err.stack }, "RAW DB ERROR ON LOGIN");
+    res.status(500).json({ error: "Database error during login", details: err.message });
+    return;
+  }
   if (!user || !verifyPassword(password, user.passwordHash)) {
     res.status(401).json({ error: "Invalid credentials" });
     return;

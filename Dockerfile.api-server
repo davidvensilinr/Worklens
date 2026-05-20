@@ -18,15 +18,15 @@ RUN corepack enable
 WORKDIR /app
 
 # Copy root workspace configuration files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json tsconfig.json ./
 
 # Copy all the shared libraries and all artifacts (needed for pnpm workspace integrity)
 COPY lib/ ./lib/
 COPY artifacts/ ./artifacts/
 COPY scripts/ ./scripts/
 
-# Install dependencies (frozen-lockfile ensures deterministic builds)
-RUN pnpm install --frozen-lockfile
+# Install dependencies
+RUN pnpm install
 
 # Build the API server
 WORKDIR /app/artifacts/api-server

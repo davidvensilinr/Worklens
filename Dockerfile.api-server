@@ -20,9 +20,9 @@ WORKDIR /app
 # Copy root workspace configuration files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 
-# Copy all the shared libraries and the API server source code
+# Copy all the shared libraries and all artifacts (needed for pnpm workspace integrity)
 COPY lib/ ./lib/
-COPY artifacts/api-server/ ./artifacts/api-server/
+COPY artifacts/ ./artifacts/
 
 # Install dependencies (frozen-lockfile ensures deterministic builds)
 RUN pnpm install --frozen-lockfile

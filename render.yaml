@@ -41,7 +41,6 @@ services:
   - type: web
     name: worklens-frontend
     runtime: static
-    plan: free
     buildCommand: pnpm install --frozen-lockfile && pnpm --filter @workspace/workproof run build
     staticPublishPath: ./artifacts/workproof/dist/public
     envVars:

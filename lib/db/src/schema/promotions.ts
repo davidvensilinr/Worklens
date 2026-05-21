@@ -17,16 +17,3 @@ export const insertPromotionSchema = createInsertSchema(promotionsTable).omit({ 
 export type InsertPromotion = z.infer<typeof insertPromotionSchema>;
 export type Promotion = typeof promotionsTable.$inferSelect;
 
-export const recognitionsTable = pgTable("recognitions", {
-  id: serial("id").primaryKey(),
-  orgId: integer("org_id").notNull(),
-  giverId: integer("giver_id").notNull(),
-  recipientId: integer("recipient_id").notNull(),
-  badge: text("badge").notNull(),
-  message: text("message"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
-
-export const insertRecognitionSchema = createInsertSchema(recognitionsTable).omit({ id: true, createdAt: true });
-export type InsertRecognition = z.infer<typeof insertRecognitionSchema>;
-export type Recognition = typeof recognitionsTable.$inferSelect;

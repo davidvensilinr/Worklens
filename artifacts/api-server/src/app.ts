@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
 import router from "./routes";
+import healthRouter from "./routes/health";
 import authRouter from "./routes/auth";
 import projectsRouter from "./routes/projects";
 import usersRouter from "./routes/users";
@@ -98,6 +99,7 @@ app.use("/api/v1/auth/login", authLimiter);
 app.use("/api/v1/auth/register", authLimiter);
 
 // --- API Routes ---
+app.use("/api", healthRouter);
 app.use("/api", authRouter);
 app.use("/api", projectsRouter);
 app.use("/api", usersRouter);

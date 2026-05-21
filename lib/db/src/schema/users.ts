@@ -24,6 +24,8 @@ export const usersTable = pgTable("users", {
   standardWorkingHours: real("standard_working_hours").notNull().default(8),
   workStartTime: text("work_start_time").default("09:00"), // 24h format HH:MM
   workEndTime: text("work_end_time").default("17:00"),     // 24h format HH:MM
+  leavesEntitled: integer("leaves_entitled").notNull().default(20),
+  roleStartDate: text("role_start_date"),
   homeLocation: text("home_location"),
   officeLocation: text("office_location"),
   jobLevel: integer("job_level"), // 1-5

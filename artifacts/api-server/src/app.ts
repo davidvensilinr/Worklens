@@ -3,6 +3,10 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
 import router from "./routes";
+import authRouter from "./routes/auth";
+import projectsRouter from "./routes/projects";
+import usersRouter from "./routes/users";
+import mlRouter from "./routes/ml";
 import { logger } from "./lib/logger";
 import { securityHeaders } from "./middlewares/security";
 import { sanitizeInput } from "./middlewares/sanitize";
@@ -94,7 +98,10 @@ app.use("/api/v1/auth/login", authLimiter);
 app.use("/api/v1/auth/register", authLimiter);
 
 // --- API Routes ---
-app.use("/api", router);
+app.use("/api", authRouter);
+app.use("/api", projectsRouter);
+app.use("/api", usersRouter);
+app.use("/api", mlRouter);
 
 // --- Static File Serving (uploads) ---
 // Set security headers for uploaded files specifically

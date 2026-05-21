@@ -14,7 +14,6 @@ export * from "./mlFeatures";
 export * from "./meetings";
 export * from "./audit";
 export * from "./chat";
-export * from "./verifications";
 export * from "./teams";
 export * from "./promotions";
 export * from "./notifications";
